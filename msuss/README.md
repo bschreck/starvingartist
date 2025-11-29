@@ -76,10 +76,22 @@ You'll be prompted to:
 python artist_conversation.py
 ```
 
+**Features:**
+- **Auto-discovery**: Automatically finds all artists in the `artists/` directory
+- **Randomized critiques**: Random pairings and random artwork selection
+- **Scalable**: Works with any number of artists (minimum 2)
+
+**Options:**
+```bash
+python artist_conversation.py -n 5  # Generate 5 random critiques
+```
+
 Watch artists critique each other's work and evolve through peer feedback:
+- **Critics evolve**: Discover new concepts and shift emotions
+- **Recipients evolve**: Confidence and emotions change based on critique scores
 - Aria might discover "crystalline spike" from Riot's aggressive style
-- Riot might trash Nova's minimalism: "God, Nova, you are so deeply *boring*"
-- Nova might appreciate Aria's depth with analytical precision
+- Riot might trash Nova's minimalism, lowering Nova's confidence
+- Nova might praise Aria's depth, boosting Aria's confidence and joy
 
 ### View the Gallery
 
