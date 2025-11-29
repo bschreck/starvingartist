@@ -1,0 +1,32 @@
+{
+  "name": "Riot",
+  "traits": {
+    "openness": 0.9,
+    "neuroticism": 0.8,
+    "conscientiousness": 0.1,
+    "agreeableness": 0.2
+  },
+  "preferences": {
+    "aesthetic": "glitch horror",
+    "medium": "manifesto"
+  },
+  "flaws": [
+    "impulsive",
+    "aggressive",
+    "chaotic"
+  ],
+  "emotions": {
+    "anger": 0.7,
+    "joy": 1.0,
+    "melancholy": 0.1,
+    "fear": 0.13471408370410842,
+    "awe": 0.44999999999999996
+  },
+  "concepts": [
+    "noise",
+    "corruption",
+    "system_failure",
+    "rebellion"
+  ],
+  "confidence": 1.0
+}

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starving Artist Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 3em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1em;
+        }
+
+        .artist-selector {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .artist-btn {
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+        }
+
+        .artist-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .artist-btn.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-color: transparent;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .artwork-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .artwork-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .artwork-preview {
+            width: 100%;
+            height: 300px;
+            background: #000;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .artwork-preview svg {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .artwork-preview.text {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
+            padding: 20px;
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+
+        .text-content {
+            font-family: 'Georgia', serif;
+            line-height: 1.8;
+            color: #d0d0d0;
+            white-space: pre-wrap;
+            font-size: 0.95em;
+        }
+
+        .artwork-meta {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .artwork-critique {
+            color: #aaa;
+            font-size: 0.85em;
+            line-height: 1.6;
+            max-height: 100px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .score {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(78, 205, 196, 0.2);
+            border-radius: 12px;
+            color: #4ecdc4;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .no-art {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 2em;
+            cursor: pointer;
+            color: #888;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .modal-artwork {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .modal-artwork svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .modal-text {
+            font-family: 'Georgia', serif;
+            line-height: 2;
+            color: #e0e0e0;
+            font-size: 1.1em;
+            white-space: pre-wrap;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .modal-critique {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid #4ecdc4;
+            border-radius: 5px;
+        }
+
+        .modal-critique h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ Starving Artist Gallery ⚡</h1>
+            <p class="subtitle">Witness the evolution of artificial souls</p>
+        </header>
+
+        <div class="artist-selector" id="artistSelector"></div>
+        <div class="gallery" id="gallery"></div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentArtist = null;
+        let artworks = {};
+
+        async function loadArtists() {
+            try {
+                const response = await fetch('artists_data.json');
+                if (!response.ok) throw new Error('Failed to load');
+                artworks = await response.json();
+
+                const selector = document.getElementById('artistSelector');
+                Object.keys(artworks).forEach(artist => {
+                    const btn = document.createElement('button');
+                    btn.className = 'artist-btn';
+                    btn.textContent = artist.charAt(0).toUpperCase() + artist.slice(1);
+                    btn.onclick = () => selectArtist(artist);
+                    selector.appendChild(btn);
+                });
+
+                if (Object.keys(artworks).length > 0) {
+                    selectArtist(Object.keys(artworks)[0]);
+                }
+            } catch (error) {
+                console.error('Error loading artists:', error);
+                document.getElementById('gallery').innerHTML =
+                    `<div class="no-art">
+                        <p>⚠️ Cannot load artist data</p>
+                        <p style="margin-top: 20px; font-size: 0.9em;">To view the gallery, you need to serve it via HTTP:</p>
+                        <pre style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px; margin-top: 10px; text-align: left;">
+cd /Users/msuss/Documents/Code/starvingartist
+python3 -m http.server 8000
+                        </pre>
+                        <p style="margin-top: 10px; font-size: 0.9em;">Then open: <a href="http://localhost:8000/viewer.html" style="color: #4ecdc4;">http://localhost:8000/viewer.html</a></p>
+                    </div>`;
+            }
+        }
+
+        function selectArtist(artist) {
+            currentArtist = artist;
+
+            document.querySelectorAll('.artist-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase() === artist) {
+                    btn.classList.add('active');
+                }
+            });
+
+            displayArtworks(artist);
+        }
+
+        function displayArtworks(artist) {
+            const gallery = document.getElementById('gallery');
+            const works = artworks[artist] || [];
+
+            if (works.length === 0) {
+                gallery.innerHTML = '<div class="no-art">No artworks yet. Run main.py to create some!</div>';
+                return;
+            }
+
+            gallery.innerHTML = works.map((work, index) => `
+                <div class="artwork-card" onclick="openModal(${index})">
+                    ${work.type === 'image' ?
+                    `<div class="artwork-preview">${work.content}</div>` :
+                    `<div class="artwork-preview text"><div class="text-content">${escapeHtml(work.content.substring(0, 300))}...</div></div>`
+                }
+                    <div class="artwork-meta">
+                        ${new Date(work.timestamp * 1000).toLocaleString()}
+                        <span class="score">${work.score.toFixed(2)}</span>
+                    </div>
+                    <div class="artwork-critique">
+                        ${escapeHtml(work.critique.substring(0, 150))}...
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openModal(index) {
+            const work = artworks[currentArtist][index];
+            const modal = document.getElementById('modal');
+            const body = document.getElementById('modalBody');
+
+            body.innerHTML = `
+                <h2>${currentArtist.charAt(0).toUpperCase() + currentArtist.slice(1)} - Creation #${index + 1}</h2>
+                <div class="artwork-meta">
+                    ${new Date(work.timestamp * 1000).toLocaleString()}
+                    <span class="score">${work.score.toFixed(2)}</span>
+                </div>
+                ${work.type === 'image' ?
+                    `<div class="modal-artwork">${work.content}</div>` :
+                    `<div class="modal-text">${escapeHtml(work.content)}</div>`
+                }
+                <div class="modal-critique">
+                    <h3>Self-Critique</h3>
+                    <p>${escapeHtml(work.critique)}</p>
+                </div>
+            `;
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Close modal on background click
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') closeModal();
+        });
+
+        loadArtists();
+    </script>
+</body>
+
+</html>

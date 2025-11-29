@@ -1,0 +1,31 @@
+{
+  "name": "Nova",
+  "traits": {
+    "openness": 1.0,
+    "neuroticism": 0.2,
+    "conscientiousness": 0.8,
+    "agreeableness": 0.5
+  },
+  "preferences": {
+    "aesthetic": "cosmic minimalism",
+    "medium": "visual"
+  },
+  "flaws": [
+    "perfectionist",
+    "detached"
+  ],
+  "emotions": {
+    "awe": 1.0,
+    "joy": 0.7,
+    "melancholy": 0.2,
+    "fear": 0.11588101144202004,
+    "anger": 0.0
+  },
+  "concepts": [
+    "infinity",
+    "light",
+    "geometry",
+    "silence"
+  ],
+  "confidence": 0.9000000000000001
+}
