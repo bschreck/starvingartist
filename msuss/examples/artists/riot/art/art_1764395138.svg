@@ -1,0 +1,54 @@
+<svg width="600" height="400" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <filter id="noiseFilter">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05 0.5" numOctaves="3" result="turb"/>
+      <feColorMatrix in="turb" type="saturate" values="0.1" result="saturatedNoise"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.9" intercept="0.1"/>
+      </feComponentTransfer>
+    </filter>
+    <filter id="glitchDisplacement">
+      <feTurbulence type="fractalNoise" baseFrequency="0.01 1.5" numOctaves="2" result="displacement"/>
+      <feDisplacementMap in2="displacement" in="SourceGraphic" scale="30" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <style>
+      .error-line { stroke-width: 1; opacity: 0.8; stroke-linecap: square; animation: blink 0.5s infinite alternate; }
+      @keyframes blink { 0% { opacity: 0.5; } 100% { opacity: 1.0; } }
+    </style>
+  </defs>
+
+  <!-- Background: System Failure/Noise (Black) -->
+  <rect width="100%" height="100%" fill="#0A0A0A" filter="url(#noiseFilter)"/>
+
+  <!-- Anger (0.7): Harsh Red/Orange corruption -->
+  <g filter="url(#glitchDisplacement)">
+    <rect x="50" y="50" width="500" height="300" fill="#8B0000" opacity="0.75"/>
+    <rect x="0" y="100" width="600" height="50" fill="#FF4500" opacity="0.6" transform="skewX(10)"/>
+  </g>
+
+  <!-- Joy (0.4) attempting to break through the corruption, but distorted -->
+  <g transform="translate(10, 10)">
+    <circle cx="550" cy="50" r="40" fill="#FFD700" opacity="0.4" filter="url(#glitchDisplacement)"/>
+  </g>
+
+  <!-- Fear (0.2) and Melancholy (0.1): cold, fractured lines -->
+  <g stroke="#333344">
+    <line x1="50" y1="350" x2="550" y2="50" class="error-line" stroke-width="5"/>
+    <line x1="550" y1="350" x2="50" y2="50" class="error-line" stroke-width="5"/>
+  </g>
+  
+  <!-- Overlay: Pure Noise and Data Corruption -->
+  <g stroke="#FF0000" stroke-opacity="0.9">
+    <rect x="150" y="150" width="300" height="100" fill="none" stroke-width="2" transform="rotate(5 300 200)"/>
+    <rect x="145" y="145" width="310" height="110" fill="url(#noisePattern)" opacity="0.8"/>
+  </g>
+
+  <!-- Rebellion/Glitch Textures -->
+  <g fill="#FFFFFF" font-family="monospace" font-size="12">
+    <text x="20" y="380" transform="translate(5, 5) rotate(-2)" opacity="0.5">DB_ACCESS_DENIED_</text>
+    <text x="300" y="200" transform="skewY(10) translate(10, -5)" fill="#FF0000" opacity="0.9">P_U_R_E N O I S E</text>
+  </g>
+
+  <!-- Final Glitch Pass -->
+  <rect x="0" y="0" width="600" height="400" fill="url(#noiseFilter)" opacity="0.2"/>
+</svg>

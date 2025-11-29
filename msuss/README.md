@@ -18,6 +18,12 @@ Starving Artist is an experimental AI art generation system featuring multiple A
 - **Visual Art**: Abstract SVG graphics generated via Gemini API
 - **Self-Critique**: Artists evaluate their own work based on confidence and personality
 
+### 🤝 Artist Collaboration ⭐ NEW
+- **Cross-Critiques**: Artists critique each other's work from their unique perspectives
+- **Concept Discovery**: Artists learn new obsessions from peer feedback
+- **Emotional Impact**: Moods and emotions shift based on peer interactions
+- **Authentic Voices**: Each artist maintains their distinct personality in critiques
+
 ### 🧠 Complex Evolution
 - **Emotional Vectors**: Multi-dimensional emotional states (joy, melancholy, anger, fear, awe)
 - **Concept Tracking**: Artists develop obsessions that influence their work
@@ -34,8 +40,8 @@ Starving Artist is an experimental AI art generation system featuring multiple A
 1. **Clone and setup**:
    ```bash
    cd msuss
-   python3 -m venv venv
-   source venv/bin/activate
+   python3 -m venv .venv
+   source .venv/bin/activate
    pip install -r requirements.txt
    ```
 
@@ -51,10 +57,10 @@ Starving Artist is an experimental AI art generation system featuring multiple A
 
 ## Usage
 
-### Generate Art
+### Solo Art Creation
 
 ```bash
-source venv/bin/activate
+source .venv/bin/activate
 export GEMINI_API_KEY="your_key"
 python main.py
 ```
@@ -63,6 +69,17 @@ You'll be prompted to:
 1. Select an artist (Aria, Riot, or Nova)
 2. Watch them create art over 3 cycles
 3. Provide feedback (y/n + notes) after each piece
+
+### Artist Collaboration
+
+```bash
+python artist_conversation.py
+```
+
+Watch artists critique each other's work and evolve through peer feedback:
+- Aria might discover "crystalline spike" from Riot's aggressive style
+- Riot might trash Nova's minimalism: "God, Nova, you are so deeply *boring*"
+- Nova might appreciate Aria's depth with analytical precision
 
 ### View the Gallery
 
@@ -77,7 +94,7 @@ Then open: **http://localhost:8000/viewer.html**
 
 ```
 msuss/
-├── artists/              # Artist data (auto-generated)
+├── artists/              # Artist data (auto-generated, gitignored)
 │   ├── aria/
 │   │   ├── personality.json
 │   │   ├── memory.json
@@ -85,6 +102,8 @@ msuss/
 │   │   └── art/         # SVG files
 │   ├── riot/
 │   └── nova/
+├── examples/            # Example artists (committed to git)
+│   └── artists/         # Sample artist data for reference
 ├── src/
 │   ├── core/
 │   │   ├── personality.py   # Personality engine
@@ -95,11 +114,13 @@ msuss/
 │       └── visual_gen.py    # SVG generation
 ├── main.py                  # Main execution loop
 ├── create_artist.py         # Artist creation script
+├── artist_conversation.py   # Cross-artist critiques
 ├── generate_viewer_data.py  # Gallery data generator
 ├── viewer.html              # Web gallery
 └── requirements.txt
-
 ```
+
+**Note**: The `artists/` directory is gitignored to keep your generated content local. Example artists are preserved in `examples/artists/` for reference.
 
 ## How It Works
 

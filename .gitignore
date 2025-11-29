@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Project specific - Generated content
+msuss/artists/
+msuss/artists_data.json
+msuss/personality.json
+msuss/memory.json
+
+# Keep examples
+!msuss/examples/
