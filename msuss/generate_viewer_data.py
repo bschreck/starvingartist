@@ -7,7 +7,7 @@ from core.memory import Memory
 
 ARTISTS_DIR = "artists"
 
-def generate_viewer_data():
+def generate_data():
     """
     Generate a JSON file with all artist data for the viewer.
     """
@@ -38,12 +38,33 @@ def generate_viewer_data():
                 critique_text = latest_critique.get("critique", "")
                 score = latest_critique.get("score", 0.0)
             
-            # Check if it's an SVG
+            # Check if it's an image (SVG or PNG)
             content = creation.get("content", "")
             artwork_type = "text"
+            img_path = None
             
-            # If content references an SVG file, load it
-            if "[SVG Created:" in content:
+            # Check for PNG images
+            if "[Image Created:" in content:
+                # Extract filename (e.g., "art/art_*.png")
+                img_ref = content.split("[Image Created:")[1].split("]")[0].strip()
+                
+                # Try art/ subdirectory first
+                img_path = os.path.join(artist_dir, img_ref)
+                if not os.path.exists(img_path):
+                    # Try root of artist directory
+                    img_filename = os.path.basename(img_ref)
+                    img_path = os.path.join(artist_dir, img_filename)
+                
+                if os.path.exists(img_path):
+                    # For PNG, store the relative path instead of content
+                    content = f'<img src="{img_path}" alt="Generated artwork" />'
+                    artwork_type = "image"
+                else:
+                    content = f"[Image file not found: {img_ref}]"
+                    img_path = None
+            
+            # Check for SVG files
+            elif "[SVG Created:" in content:
                 # Extract filename (could be "art/art_*.svg" or "art_*.svg")
                 svg_ref = content.split("[SVG Created:")[1].split("]")[0].strip()
                 
@@ -57,7 +78,7 @@ def generate_viewer_data():
                 if os.path.exists(svg_path):
                     with open(svg_path, 'r') as f:
                         content = f.read()
-                    artwork_type = "image"
+                    artwork_type = "svg"
                 else:
                     # SVG file not found, keep as text
                     content = f"[SVG file not found: {svg_ref}]"
@@ -66,6 +87,7 @@ def generate_viewer_data():
                 "timestamp": creation.get("timestamp", 0),
                 "type": artwork_type,
                 "content": content,
+                "url": img_path if artwork_type == "image" else None,
                 "critique": critique_text,
                 "score": score
             })
@@ -83,4 +105,4 @@ def generate_viewer_data():
     print("\nOpen viewer.html in your browser to view the gallery!")
 
 if __name__ == "__main__":
-    generate_viewer_data()
+    generate_data()

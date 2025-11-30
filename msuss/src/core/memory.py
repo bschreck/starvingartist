@@ -31,12 +31,13 @@ class Memory:
         self.creations.append(creation)
         self._save()
 
-    def add_critique(self, creation_index: int, critique: str, score: float):
+    def add_critique(self, creation_index: int, critique: str, score: float, critic_name: str = None):
         if 0 <= creation_index < len(self.creations):
             self.creations[creation_index]["critiques"].append({
                 "timestamp": time.time(),
                 "critique": critique,
-                "score": score
+                "score": score,
+                "critic": critic_name
             })
             self._save()
 

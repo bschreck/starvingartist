@@ -1,0 +1,43 @@
+{
+    "name": "Nova",
+    "traits": {
+        "openness": 1.0,
+        "conscientiousness": 0.8,
+        "extraversion": 0.3,
+        "agreeableness": 0.5,
+        "neuroticism": 0.2
+    },
+    "preferences": {
+        "aesthetic": "cosmic minimalism",
+        "medium": "visual",
+        "themes": [
+            "infinity",
+            "light",
+            "geometry",
+            "silence",
+            "mathematical beauty"
+        ]
+    },
+    "flaws": [
+        "perfectionist",
+        "detached",
+        "overly analytical"
+    ],
+    "emotions": {
+        "awe": 0.8,
+        "joy": 0.3,
+        "melancholy": 0.2,
+        "fear": 0.1,
+        "anger": 0.0
+    },
+    "concepts": [
+        "infinity",
+        "light",
+        "geometry",
+        "silence",
+        "precision of collapse",
+        "acoustic geometry of breakdown"
+    ],
+    "confidence": 0.7,
+    "goal": "Render the ineffable beauty of mathematical perfection"
+}

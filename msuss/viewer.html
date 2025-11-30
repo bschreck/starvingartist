@@ -115,9 +115,11 @@
             overflow: hidden;
         }
 
-        .artwork-preview svg {
+        .artwork-preview svg,
+        .artwork-preview img {
             max-width: 100%;
             max-height: 100%;
+            object-fit: contain;
         }
 
         .artwork-preview.text {
@@ -214,9 +216,12 @@
             text-align: center;
         }
 
-        .modal-artwork svg {
+        .modal-artwork svg,
+        .modal-artwork img {
             max-width: 100%;
             height: auto;
+            max-height: 70vh;
+            object-fit: contain;
         }
 
         .modal-text {
@@ -253,7 +258,7 @@
         </header>
 
         <div class="artist-selector" id="artistSelector"></div>
-        <div class="gallery" id="gallery"></div>
+        <div id="gallery-container"></div>
     </div>
 
     <div class="modal" id="modal">
@@ -264,121 +269,269 @@
     </div>
 
     <script>
-        let currentArtist = null;
-        let artworks = {};
+        // Fetch data from API
+        fetch('/api/artists')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('artistSelector');
+                const modal = document.getElementById('modal');
+                const closeBtn = document.querySelector('.modal-close');
 
-        async function loadArtists() {
-            try {
-                const response = await fetch('artists_data.json');
-                if (!response.ok) throw new Error('Failed to load');
-                artworks = await response.json();
+                // Close modal
+                closeBtn.onclick = function () {
+                    modal.style.display = "none";
+                }
+                window.onclick = function (event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
 
-                const selector = document.getElementById('artistSelector');
-                Object.keys(artworks).forEach(artist => {
+                // Render artists
+                for (const [name, artworks] of Object.entries(data)) {
                     const btn = document.createElement('button');
                     btn.className = 'artist-btn';
-                    btn.textContent = artist.charAt(0).toUpperCase() + artist.slice(1);
-                    btn.onclick = () => selectArtist(artist);
-                    selector.appendChild(btn);
-                });
-
-                if (Object.keys(artworks).length > 0) {
-                    selectArtist(Object.keys(artworks)[0]);
+                    btn.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+                    btn.onclick = () => displayArtistArtworks(name, data);
+                    container.appendChild(btn);
                 }
-            } catch (error) {
-                console.error('Error loading artists:', error);
-                document.getElementById('gallery').innerHTML =
-                    `<div class="no-art">
-                        <p>⚠️ Cannot load artist data</p>
-                        <p style="margin-top: 20px; font-size: 0.9em;">To view the gallery, you need to serve it via HTTP:</p>
-                        <pre style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px; margin-top: 10px; text-align: left;">
-cd /Users/msuss/Documents/Code/starvingartist
-python3 -m http.server 8000
-                        </pre>
-                        <p style="margin-top: 10px; font-size: 0.9em;">Then open: <a href="http://localhost:8000/viewer.html" style="color: #4ecdc4;">http://localhost:8000/viewer.html</a></p>
-                    </div>`;
-            }
-        }
 
-        function selectArtist(artist) {
-            currentArtist = artist;
+                // Display first artist's artworks by default
+                if (Object.keys(data).length > 0) {
+                    displayArtistArtworks(Object.keys(data)[0], data);
+                }
 
-            document.querySelectorAll('.artist-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.textContent.toLowerCase() === artist) {
-                    btn.classList.add('active');
+                function displayArtistArtworks(artistName, allData) {
+                    const container = document.getElementById('gallery-container');
+                    container.innerHTML = ''; // Clear previous content
+
+                    document.querySelectorAll('.artist-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                        if (btn.textContent.toLowerCase() === artistName.toLowerCase()) {
+                            btn.classList.add('active');
+                        }
+                    });
+
+                    const artworks = allData[artistName];
+                    if (!artworks || artworks.length === 0) {
+                        container.innerHTML = '<div class="no-art">No artworks yet. Run main.py to create some!</div>';
+
+                        // Still show controls even if no art
+                        const controlsDiv = document.createElement('div');
+                        controlsDiv.style.display = 'flex';
+                        controlsDiv.style.gap = '10px';
+                        controlsDiv.style.marginBottom = '20px';
+                        controlsDiv.style.justifyContent = 'center';
+
+                        const genBtn = document.createElement('button');
+                        genBtn.textContent = '🎨 Generate Art';
+                        genBtn.className = 'artist-btn';
+                        genBtn.onclick = () => generateArt(artistName);
+
+                        controlsDiv.appendChild(genBtn);
+                        container.prepend(controlsDiv);
+                        return;
+                    }
+
+                    // Controls for the selected artist
+                    const controlsDiv = document.createElement('div');
+                    controlsDiv.style.display = 'flex';
+                    controlsDiv.style.gap = '10px';
+                    controlsDiv.style.marginBottom = '20px';
+                    controlsDiv.style.justifyContent = 'center';
+
+                    const genBtn = document.createElement('button');
+                    genBtn.textContent = '🎨 Generate Art';
+                    genBtn.className = 'artist-btn';
+                    genBtn.onclick = () => generateArt(artistName);
+
+                    const critiqueBtn = document.createElement('button');
+                    critiqueBtn.textContent = '💬 Critique';
+                    critiqueBtn.className = 'artist-btn';
+                    critiqueBtn.onclick = () => triggerCritique(artistName, allData);
+
+                    controlsDiv.appendChild(genBtn);
+                    controlsDiv.appendChild(critiqueBtn);
+                    container.appendChild(controlsDiv);
+
+
+                    // Artworks Grid
+                    const grid = document.createElement('div');
+                    grid.className = 'gallery';
+                    grid.style.marginTop = '0';
+
+                    artworks.forEach((art, index) => {
+                        const card = document.createElement('div');
+                        card.className = 'artwork-card';
+
+                        let previewContent = '';
+                        if (art.type === 'svg') {
+                            previewContent = `<div class="artwork-preview">${art.content}</div>`;
+                        } else if (art.type === 'image') {
+                            // Use the explicit URL if available, otherwise try to extract from content
+                            const src = art.url || (art.content.match(/src="([^"]+)"/) ? art.content.match(/src="([^"]+)"/)[1] : '');
+                            previewContent = `<div class="artwork-preview"><img src="${src}" alt="Generated Art"></div>`;
+                        } else {
+                            previewContent = `<div class="artwork-preview text"><div class="text-content">${escapeHtml(art.content.substring(0, 300))}...</div></div>`;
+                        }
+
+                        // Extract critique text safely
+                        let critiqueText = 'No critique yet.';
+                        if (art.critique) {
+                            critiqueText = art.critique.substring(0, 150) + '...';
+                        }
+
+                        card.innerHTML = `
+                            ${previewContent}
+                            <div class="artwork-meta">
+                                ${new Date(art.timestamp * 1000).toLocaleString()}
+                                <span class="score">${(art.score || 0).toFixed(2)}</span>
+                            </div>
+                            <div class="artwork-critique">
+                                ${escapeHtml(critiqueText)}
+                            </div>
+                        `;
+
+                        card.onclick = () => {
+                            const modalBody = document.getElementById('modalBody');
+                            modalBody.innerHTML = '';
+
+                            // Display Art
+                            const artDisplay = document.createElement('div');
+                            artDisplay.className = 'modal-artwork';
+                            if (art.type === 'svg') {
+                                artDisplay.innerHTML = art.content;
+                            } else if (art.type === 'image') {
+                                const src = art.url || (art.content.match(/src="([^"]+)"/) ? art.content.match(/src="([^"]+)"/)[1] : '');
+                                artDisplay.innerHTML = `<img src="${src}" alt="Generated Art">`;
+                            } else {
+                                artDisplay.innerHTML = `<div class="modal-text">${escapeHtml(art.content)}</div>`;
+                            }
+                            modalBody.appendChild(artDisplay);
+
+                            // Metadata
+                            const metaDiv = document.createElement('div');
+                            metaDiv.innerHTML = `
+                                <h2>${artistName.charAt(0).toUpperCase() + artistName.slice(1)} - Creation #${index + 1}</h2>
+                                <div class="artwork-meta">
+                                    ${new Date(art.timestamp * 1000).toLocaleString()}
+                                    <span class="score">${(art.score || 0).toFixed(2)}</span>
+                                </div>
+                            `;
+                            modalBody.appendChild(metaDiv);
+
+                            // Critiques
+                            // Note: The current data structure flattens critiques into a single string in generate_viewer_data.py
+                            // Ideally we should pass the full list of critiques. 
+                            // For now, we display the latest one available in the 'critique' field.
+                            if (art.critique) {
+                                const critiqueSection = document.createElement('div');
+                                critiqueSection.className = 'modal-critique';
+                                critiqueSection.innerHTML = '<h3>Latest Critique</h3>';
+                                const cDiv = document.createElement('div');
+                                cDiv.innerHTML = `
+                                    <p>${escapeHtml(art.critique)}</p>
+                                `;
+                                critiqueSection.appendChild(cDiv);
+                                modalBody.appendChild(critiqueSection);
+                            }
+
+                            modal.style.display = "block";
+                        };
+
+                        grid.appendChild(card);
+                    });
+
+                    container.appendChild(grid);
+                }
+
+                function generateArt(artistName) {
+                    const btn = event.target;
+                    const originalText = btn.textContent;
+                    btn.textContent = '🎨 Generating...';
+                    btn.disabled = true;
+
+                    fetch('/api/generate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ artist: artistName }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert(`Generated new ${data.type} art for ${artistName}!`);
+                                // Refresh data
+                                location.reload();
+                            } else {
+                                alert('Error: ' + data.error);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error generating art');
+                        })
+                        .finally(() => {
+                            btn.textContent = originalText;
+                            btn.disabled = false;
+                        });
+                }
+
+                function triggerCritique(subjectName, allData) {
+                    const critics = Object.keys(allData).filter(n => n !== subjectName);
+                    if (critics.length === 0) {
+                        alert("No other artists available to critique!");
+                        return;
+                    }
+
+                    // Simple prompt for now
+                    const criticName = prompt(`Choose a critic for ${subjectName}:\n${critics.join(', ')}`);
+                    if (!criticName || !critics.includes(criticName.toLowerCase())) {
+                        return;
+                    }
+
+                    const btn = event.target;
+                    const originalText = btn.textContent;
+                    btn.textContent = '💬 Critiquing...';
+                    btn.disabled = true;
+
+                    fetch('/api/critique', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            critic: criticName.toLowerCase(),
+                            subject: subjectName
+                        }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert(`Critique complete!\nScore: ${data.score.toFixed(2)}\n\n"${data.critique.substring(0, 100)}..."`);
+                                location.reload();
+                            } else {
+                                alert('Error: ' + data.error);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error running critique');
+                        })
+                        .finally(() => {
+                            btn.textContent = originalText;
+                            btn.disabled = false;
+                        });
+                }
+
+                function escapeHtml(text) {
+                    if (!text) return '';
+                    const div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
                 }
             });
-
-            displayArtworks(artist);
-        }
-
-        function displayArtworks(artist) {
-            const gallery = document.getElementById('gallery');
-            const works = artworks[artist] || [];
-
-            if (works.length === 0) {
-                gallery.innerHTML = '<div class="no-art">No artworks yet. Run main.py to create some!</div>';
-                return;
-            }
-
-            gallery.innerHTML = works.map((work, index) => `
-                <div class="artwork-card" onclick="openModal(${index})">
-                    ${work.type === 'image' ?
-                    `<div class="artwork-preview">${work.content}</div>` :
-                    `<div class="artwork-preview text"><div class="text-content">${escapeHtml(work.content.substring(0, 300))}...</div></div>`
-                }
-                    <div class="artwork-meta">
-                        ${new Date(work.timestamp * 1000).toLocaleString()}
-                        <span class="score">${work.score.toFixed(2)}</span>
-                    </div>
-                    <div class="artwork-critique">
-                        ${escapeHtml(work.critique.substring(0, 150))}...
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function openModal(index) {
-            const work = artworks[currentArtist][index];
-            const modal = document.getElementById('modal');
-            const body = document.getElementById('modalBody');
-
-            body.innerHTML = `
-                <h2>${currentArtist.charAt(0).toUpperCase() + currentArtist.slice(1)} - Creation #${index + 1}</h2>
-                <div class="artwork-meta">
-                    ${new Date(work.timestamp * 1000).toLocaleString()}
-                    <span class="score">${work.score.toFixed(2)}</span>
-                </div>
-                ${work.type === 'image' ?
-                    `<div class="modal-artwork">${work.content}</div>` :
-                    `<div class="modal-text">${escapeHtml(work.content)}</div>`
-                }
-                <div class="modal-critique">
-                    <h3>Self-Critique</h3>
-                    <p>${escapeHtml(work.critique)}</p>
-                </div>
-            `;
-
-            modal.classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Close modal on background click
-        document.getElementById('modal').addEventListener('click', (e) => {
-            if (e.target.id === 'modal') closeModal();
-        });
-
-        loadArtists();
     </script>
 </body>
 

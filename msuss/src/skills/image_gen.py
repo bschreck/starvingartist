@@ -11,7 +11,7 @@ class ImageGenerationSkill(Skill):
         if api_key:
             from google import genai
             self.client = genai.Client(api_key=api_key)
-            self.model_name = "gemini-2.5-flash-image"
+            self.model_name = "gemini-3-pro-image-preview"
         else:
             self.client = None
             print("Warning: GEMINI_API_KEY not found. Image generation will fail.")
@@ -35,7 +35,7 @@ class ImageGenerationSkill(Skill):
         concepts = ', '.join(personality.concepts[:3])
         
         # Create a concise prompt for image generation
-        prompt = f"Abstract {aesthetic} artwork expressing {dominant_emotion}. Themes: {concepts}. Style: emotional, conceptual, expressive."
+        prompt = f"Generate a piece of {aesthetic} artwork expressing {dominant_emotion}. Themes: {concepts}. Style: emotional, conceptual, expressive. Do not include the words from this prompt in the image."
         
         # Generate filename
         timestamp = int(time.time())

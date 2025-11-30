@@ -95,14 +95,26 @@ Watch artists critique each other's work and evolve through peer feedback:
 - Riot might trash Nova's minimalism, lowering Nova's confidence
 - Nova might praise Aria's depth, boosting Aria's confidence and joy
 
-### View the Gallery
+## Gallery Viewer
+
+View all generated artworks in a beautiful web gallery:
 
 ```bash
+# Auto-generate data and start server
+./start_viewer.sh
+
+# Or manually:
 python generate_viewer_data.py
 python3 -m http.server 8000
 ```
 
-Then open: **http://localhost:8000/viewer.html**
+Then open http://localhost:8000/viewer.html
+
+The viewer automatically:
+- Generates fresh data from all artists
+- Displays text, images (PNG), and SVG artworks
+- Shows critiques and scores
+- Provides modal view for detailed inspection
 
 ## Project Structure
 
@@ -146,12 +158,78 @@ msuss/
 
 ## Creating New Artists
 
-Edit `create_artist.py` to add new artist archetypes:
+### From JSON Templates
+
+You can create artists from JSON template files stored in `artist_templates/` (git-ignored):
+
+```bash
+# List available templates
+python create_from_json.py --list
+
+# Create all artists from templates
+python create_from_json.py
+
+# Create specific artists
+python create_from_json.py marina silas
+```
+
+**JSON Template Format:**
+```json
+{
+  "name": "ArtistName",
+  "traits": {
+    "openness": 0.9,
+    "conscientiousness": 0.6,
+    "extraversion": 0.4,
+    "agreeableness": 0.8,
+    "neuroticism": 0.3
+  },
+  "preferences": {
+    "aesthetic": "description",
+    "medium": "description",
+    "themes": ["theme1", "theme2"]
+  },
+  "flaws": ["flaw1", "flaw2"],
+  "emotions": {
+    "joy": 0.7,
+    "melancholy": 0.5,
+    "awe": 0.9,
+    "fear": 0.2
+  },
+  "concepts": ["concept1", "concept2", "concept3"],
+  "confidence": 0.7,
+  "goal": "Artist's creative goal"
+}
+```
+
+### Programmatically
+
+You can also create artists programmatically using `create_artist.py`:
+
+```bash
+python create_artist.py all    # Create Aria, Riot, and Nova
+python create_artist.py aria   # Create specific artist
+python create_artist.py riot
+python create_artist.py nova
+```
+
+Or use the `create_artist()` function directly in your code:
 
 ```python
+from create_artist import create_artist
+
 create_artist(
-    name="YourArtist",
-    traits={"openness": 0.9, "neuroticism": 0.5, ...},
+    name="CustomArtist",
+    traits={"openness": 0.9, "conscientiousness": 0.6, ...},
+    preferences={"aesthetic": "...", "medium": "...", "themes": [...]},
+    flaws=["flaw1", "flaw2"],
+    emotions={"joy": 0.7, "melancholy": 0.5, ...},
+    concepts=["concept1", "concept2"],
+    confidence=0.7,
+    goal="Artist's creative goal"
+)
+```
+
     preferences={"aesthetic": "surrealist", "medium": "poetry"},
     flaws=["perfectionist"],
     emotions={"joy": 0.8, "melancholy": 0.2, ...},
