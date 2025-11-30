@@ -21,6 +21,7 @@ msuss/artists/
 msuss/artists_data.json
 msuss/personality.json
 msuss/memory.json
+msuss/artists_data.json
 
 # Keep examples
 !msuss/examples/
