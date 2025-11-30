@@ -12,10 +12,11 @@ Starving Artist is an experimental AI art generation system featuring multiple A
 - **Aria** (The Poet): Melancholic, obsessed with entropy and the void
 - **Riot** (The Punk): Aggressive, focused on noise and system corruption  
 - **Nova** (The Minimalist): Awe-filled, obsessed with geometry and mathematical perfection
+- **Echo** (The Observer): Paranoid, obsessed with recursion and self-reflection
 
 ### 🎨 Art Generation
 - **Text Art**: Poetry, manifestos, prose
-- **Visual Art**: Abstract SVG graphics generated via Gemini API
+- **Visual Art**: Abstract images generated via Gemini API (`gemini-2.5-flash-image`)
 - **Self-Critique**: Artists evaluate their own work based on confidence and personality
 
 ### 🤝 Artist Collaboration ⭐ NEW
@@ -78,7 +79,8 @@ python artist_conversation.py
 
 **Features:**
 - **Auto-discovery**: Automatically finds all artists in the `artists/` directory
-- **Randomized critiques**: Random pairings and random artwork selection
+- **Circular critiques**: By default, each artist critiques one other in a shuffled circle
+- **Randomized selection**: Random artwork selection for variety
 - **Scalable**: Works with any number of artists (minimum 2)
 
 **Options:**
@@ -162,7 +164,8 @@ create_artist(
 ## Dependencies
 
 - Python 3.8+
-- `google-generativeai` - For Gemini API
+- `google-generativeai` - For text generation and critiques
+- `google-genai` - For image generation with Gemini
 - `pytest` - For testing
 
 ## License

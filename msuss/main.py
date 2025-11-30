@@ -8,7 +8,7 @@ from core.personality import Personality
 from core.memory import Memory
 from core.goals import GoalManager
 from skills.text_gen import TextGenerationSkill
-from skills.visual_gen import VisualGenerationSkill
+from skills.image_gen import ImageGenerationSkill
 import random
 
 ARTISTS_DIR = "artists"
@@ -78,7 +78,7 @@ def main():
     print(f"Current Goal: {goals.current_goal}")
 
     text_skill = TextGenerationSkill()
-    visual_skill = VisualGenerationSkill()
+    image_skill = ImageGenerationSkill()
     
     for i in range(3):
         print(f"\n\n=== Generation Cycle {i+1} ===")
@@ -88,8 +88,8 @@ def main():
             skill = text_skill
             print("Selected Skill: Text Generation")
         else:
-            skill = visual_skill
-            print("Selected Skill: Visual Generation")
+            skill = image_skill
+            print("Selected Skill: Image Generation")
         
         # 4. Generate
         context = {

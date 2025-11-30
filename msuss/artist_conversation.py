@@ -73,35 +73,64 @@ def cross_critique(critic_personality, artwork_content):
         response = skill.model.generate_content(prompt)
         text = response.text
         
-        # Parse response
+        # Parse response with more robust handling
         score = 0.5
         critique = text
         new_concepts = []
         emotional_impact = {}
         
-        if "Score:" in text:
-            try:
-                score_line = text.split("Score:")[1].split("\n")[0].strip()
-                score = float(score_line)
-            except:
-                pass
+        # Parse score - handle multiple formats including newlines
+        score_patterns = [
+            r"Score:\s*\*\*\s*(\d+\.?\d*)",  # **Score:** 0.85
+            r"\*\*Score:\*\*\s*(\d+\.?\d*)",  # **Score:** 0.85
+            r"Score:\s*(\d+\.?\d*)",           # Score: 0.85
+            r"Score:\s*\n\s*(\d+\.?\d*)",      # Score:\n0.85
+        ]
         
-        if "New Concepts:" in text:
-            try:
-                concepts_line = text.split("New Concepts:")[1].split("\n")[0].strip()
-                new_concepts = [c.strip() for c in concepts_line.split(",") if c.strip()]
-            except:
-                pass
+        for pattern in score_patterns:
+            import re
+            match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+            if match:
+                try:
+                    score = float(match.group(1))
+                    break
+                except:
+                    pass
         
-        if "Emotional Impact:" in text:
-            try:
-                impact_line = text.split("Emotional Impact:")[1].split("\n")[0].strip()
-                # Simple parsing: look for emotion keywords
+        # Parse new concepts - handle multiple formats
+        concept_patterns = [
+            r"New Concepts:\s*\*\*\s*([^\n]+)",  # New Concepts: ** concepts
+            r"\*\*New Concepts:\*\*\s*([^\n]+)",  # **New Concepts:** concepts
+            r"New Concepts:\s*([^\n]+)",          # New Concepts: concepts
+        ]
+        
+        for pattern in concept_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                concepts_line = match.group(1).strip()
+                # Remove markdown formatting
+                concepts_line = concepts_line.replace("**", "").strip()
+                # Skip if it's just punctuation or empty
+                if concepts_line and concepts_line not in ["", "*", "**"]:
+                    new_concepts = [c.strip() for c in concepts_line.split(",") if c.strip() and c.strip() not in ["*", "**"]]
+                    break
+        
+        # Parse emotional impact
+        impact_patterns = [
+            r"Emotional Impact:\s*\*\*\s*([^\n]+)",
+            r"\*\*Emotional Impact:\*\*\s*([^\n]+)",
+            r"Emotional Impact:\s*([^\n]+)",
+        ]
+        
+        for pattern in impact_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                impact_line = match.group(1).strip()
+                # Look for emotion keywords
                 for emotion in ["joy", "anger", "melancholy", "fear", "awe"]:
                     if emotion in impact_line.lower():
                         emotional_impact[emotion] = 0.1
-            except:
-                pass
+                break
         
         return {
             "score": max(0.0, min(1.0, score)),
@@ -152,26 +181,40 @@ def artist_conversation(num_critiques=None):
     
     # Determine number of critiques
     if num_critiques is None:
+        # Default: each artist critiques one other artist in a circle
         num_critiques = len(artists)
+        
+        # Shuffle artist order for variety
+        artist_names = list(artists.keys())
+        random.shuffle(artist_names)
+        
+        # Create circular critique pairs
+        critique_pairs = []
+        for i in range(len(artist_names)):
+            critic_name = artist_names[i]
+            subject_name = artist_names[(i + 1) % len(artist_names)]
+            critique_pairs.append((critic_name, subject_name))
+    else:
+        # Custom number: generate random pairs
+        critique_pairs = []
+        available_critics = list(artists.keys())
+        
+        for _ in range(num_critiques):
+            if len(available_critics) < 2:
+                available_critics = list(artists.keys())
+            
+            critic_name = random.choice(available_critics)
+            available_critics.remove(critic_name)
+            
+            possible_subjects = [name for name in artists.keys() if name != critic_name]
+            if not possible_subjects:
+                continue
+            
+            subject_name = random.choice(possible_subjects)
+            critique_pairs.append((critic_name, subject_name))
     
-    # Generate random critique pairs
-    available_critics = list(artists.keys())
-    
-    for _ in range(num_critiques):
-        if len(available_critics) < 2:
-            # Reset if we've used everyone
-            available_critics = list(artists.keys())
-        
-        # Pick random critic
-        critic_name = random.choice(available_critics)
-        available_critics.remove(critic_name)
-        
-        # Pick random subject (different from critic)
-        possible_subjects = [name for name in artists.keys() if name != critic_name]
-        if not possible_subjects:
-            continue
-        
-        subject_name = random.choice(possible_subjects)
+    # Execute critiques
+    for critic_name, subject_name in critique_pairs:
         
         critic = artists[critic_name]
         subject = artists[subject_name]
@@ -192,7 +235,7 @@ def artist_conversation(num_critiques=None):
         )
         
         print(f"Score: {result['score']:.2f}")
-        print(f"Critique: {result['critique'][:300]}...")
+        print(f"Critique: {result['critique']}...")
         
         # Update critic's state based on the experience
         critic_changed = False

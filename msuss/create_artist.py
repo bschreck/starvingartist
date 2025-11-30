@@ -81,10 +81,22 @@ def create_nova():
         goal="Render the ineffable beauty of mathematical perfection"
     )
 
+def create_echo():
+    create_artist(
+        name="Echo",
+        traits={"openness": 0.8, "neuroticism": 0.9, "conscientiousness": 0.3, "agreeableness": 0.4},
+        preferences={"aesthetic": "recursive fragmentation", "medium": "meta-commentary"},
+        flaws=["self-referential", "obsessive", "paranoid"],
+        emotions={"fear": 0.6, "melancholy": 0.4, "awe": 0.3, "anger": 0.2, "joy": 0.1},
+        concepts=["reflection", "recursion", "mirror", "feedback-loop"],
+        confidence=0.5,
+        goal="Document the infinite regress of self-observation"
+    )
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Create artist personalities")
-    parser.add_argument("artist", choices=["riot", "aria", "nova", "all"], help="Which artist to create")
+    parser.add_argument("artist", choices=["riot", "aria", "nova", "echo", "all"], help="Which artist to create")
     args = parser.parse_args()
     
     if args.artist == "riot":
@@ -93,7 +105,10 @@ if __name__ == "__main__":
         create_aria()
     elif args.artist == "nova":
         create_nova()
+    elif args.artist == "echo":
+        create_echo()
     elif args.artist == "all":
         create_riot()
         create_aria()
         create_nova()
+        create_echo()
